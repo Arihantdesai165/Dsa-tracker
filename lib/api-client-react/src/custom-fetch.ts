@@ -358,11 +358,30 @@ export async function customFetch<T = unknown>(
     }
   }
 
+  if (!headers.has("authorization")) {
+    try {
+      const token = localStorage.getItem("dsa_token");
+      if (token) {
+        headers.set("authorization", `Bearer ${token}`);
+      }
+    } catch (e) {
+      // Ignore localStorage errors
+    }
+  }
+
   const requestInfo = { method, url: resolveUrl(input) };
 
   const response = await fetch(input, { ...init, method, headers });
 
   if (!response.ok) {
+    if (response.status === 401) {
+      try {
+        localStorage.removeItem("dsa_token");
+      } catch (e) {}
+      if (typeof window !== "undefined" && window.location.pathname !== "/login" && window.location.pathname !== "/register") {
+        window.location.href = "/login";
+      }
+    }
     const errorData = await parseErrorBody(response, method);
     throw new ApiError(response, errorData, requestInfo);
   }

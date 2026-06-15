@@ -3,20 +3,32 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: DSA Tracker API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: auth
+    description: Authentication operations
+  - name: topics
+    description: DSA topic operations
+  - name: questions
+    description: DSA question operations
+  - name: revisions
+    description: Revision operations
+  - name: notes
+    description: Notes operations
+  - name: dashboard
+    description: Dashboard and stats operations
+
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,13 +36,703 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  # ── Auth ─────────────────────────────────────────────────────────────────
+  /auth/register:
+    post:
+      operationId: register
+      tags: [auth]
+      summary: Register a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterInput"
+      responses:
+        "201":
+          description: Registered
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Email already in use
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/login:
+    post:
+      operationId: login
+      tags: [auth]
+      summary: Log in
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginInput"
+      responses:
+        "200":
+          description: Logged in
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "401":
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/logout:
+    post:
+      operationId: logout
+      tags: [auth]
+      summary: Log out (clears session cookie)
+      responses:
+        "200":
+          description: Logged out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+
+  /auth/me:
+    get:
+      operationId: getMe
+      tags: [auth]
+      summary: Get current user
+      responses:
+        "200":
+          description: Current user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  # ── Topics ───────────────────────────────────────────────────────────────
+  /topics:
+    get:
+      operationId: listTopics
+      tags: [topics]
+      summary: List all topics with user progress
+      responses:
+        "200":
+          description: List of topics
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TopicWithProgress"
+
+  /topics/{topicId}/progress:
+    patch:
+      operationId: updateTopicProgress
+      tags: [topics]
+      summary: Update user progress for a topic
+      parameters:
+        - name: topicId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TopicProgressInput"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TopicWithProgress"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  # ── Questions ─────────────────────────────────────────────────────────────
+  /questions:
+    get:
+      operationId: listQuestions
+      tags: [questions]
+      summary: List all questions with optional filters
+      parameters:
+        - name: topicId
+          in: query
+          schema:
+            type: integer
+        - name: difficulty
+          in: query
+          schema:
+            type: string
+            enum: [Easy, Medium, Hard]
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [Not Started, Attempted, Solved]
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: sortBy
+          in: query
+          schema:
+            type: string
+            enum: [difficulty, recentlySolved, name]
+      responses:
+        "200":
+          description: List of questions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/QuestionWithProgress"
+
+    post:
+      operationId: createQuestion
+      tags: [questions]
+      summary: Create a new question
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/QuestionInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QuestionWithProgress"
+
+  /questions/{questionId}/progress:
+    patch:
+      operationId: updateQuestionProgress
+      tags: [questions]
+      summary: Update user progress / notes for a question
+      parameters:
+        - name: questionId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/QuestionProgressInput"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QuestionWithProgress"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  # ── Revisions ─────────────────────────────────────────────────────────────
+  /revisions:
+    get:
+      operationId: listRevisions
+      tags: [revisions]
+      summary: List revisions (optionally filter by status/due)
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [Pending, Completed]
+        - name: dueToday
+          in: query
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: List of revisions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/RevisionWithDetails"
+
+  /revisions/{revisionId}/complete:
+    patch:
+      operationId: completeRevision
+      tags: [revisions]
+      summary: Mark a revision as completed
+      parameters:
+        - name: revisionId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RevisionWithDetails"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  # ── Notes ─────────────────────────────────────────────────────────────────
+  /notes:
+    get:
+      operationId: listNotes
+      tags: [notes]
+      summary: List notes (optionally filter by topicId or questionId)
+      parameters:
+        - name: topicId
+          in: query
+          schema:
+            type: integer
+        - name: questionId
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of notes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Note"
+
+    post:
+      operationId: createNote
+      tags: [notes]
+      summary: Create a note
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NoteInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Note"
+
+  /notes/{noteId}:
+    patch:
+      operationId: updateNote
+      tags: [notes]
+      summary: Update a note
+      parameters:
+        - name: noteId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NoteUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Note"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+    delete:
+      operationId: deleteNote
+      tags: [notes]
+      summary: Delete a note
+      parameters:
+        - name: noteId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  # ── Dashboard ─────────────────────────────────────────────────────────────
+  /dashboard/stats:
+    get:
+      operationId: getDashboardStats
+      tags: [dashboard]
+      summary: Get dashboard statistics
+      responses:
+        "200":
+          description: Statistics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardStats"
+
+  /dashboard/activity:
+    get:
+      operationId: getRecentActivity
+      tags: [dashboard]
+      summary: Get recent activity feed
+      responses:
+        "200":
+          description: Recent activity
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ActivityItem"
+
 components:
   schemas:
     HealthStatus:
       type: object
+      required: [status]
       properties:
         status:
           type: string
-      required:
-        - status
 
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
+
+    MessageResponse:
+      type: object
+      required: [message]
+      properties:
+        message:
+          type: string
+
+    # ── Auth ──────────────────────────────────────────────────────────────
+    RegisterInput:
+      type: object
+      required: [name, email, password]
+      properties:
+        name:
+          type: string
+          minLength: 1
+        email:
+          type: string
+        password:
+          type: string
+          minLength: 6
+
+    LoginInput:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+
+    User:
+      type: object
+      required: [id, name, email, createdAt]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        email:
+          type: string
+        createdAt:
+          type: string
+
+    AuthResponse:
+      type: object
+      required: [user, token]
+      properties:
+        user:
+          $ref: "#/components/schemas/User"
+        token:
+          type: string
+
+    # ── Topics ────────────────────────────────────────────────────────────
+    Topic:
+      type: object
+      required: [id, name, description]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+
+    TopicWithProgress:
+      type: object
+      required: [id, name, description, status, questionCount, solvedCount]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        status:
+          type: string
+          enum: [Not Started, In Progress, Completed]
+        startedAt:
+          type: ["string", "null"]
+        completedAt:
+          type: ["string", "null"]
+        questionCount:
+          type: integer
+        solvedCount:
+          type: integer
+
+    TopicProgressInput:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [Not Started, In Progress, Completed]
+
+    # ── Questions ─────────────────────────────────────────────────────────
+    Question:
+      type: object
+      required: [id, topicId, title, difficulty, platform]
+      properties:
+        id:
+          type: integer
+        topicId:
+          type: integer
+        title:
+          type: string
+        difficulty:
+          type: string
+          enum: [Easy, Medium, Hard]
+        platform:
+          type: string
+        link:
+          type: ["string", "null"]
+
+    QuestionWithProgress:
+      type: object
+      required: [id, topicId, topicName, title, difficulty, platform, status]
+      properties:
+        id:
+          type: integer
+        topicId:
+          type: integer
+        topicName:
+          type: string
+        title:
+          type: string
+        difficulty:
+          type: string
+          enum: [Easy, Medium, Hard]
+        platform:
+          type: string
+        link:
+          type: ["string", "null"]
+        status:
+          type: string
+          enum: [Not Started, Attempted, Solved]
+        notes:
+          type: ["string", "null"]
+        solvedAt:
+          type: ["string", "null"]
+
+    QuestionInput:
+      type: object
+      required: [topicId, title, difficulty, platform]
+      properties:
+        topicId:
+          type: integer
+        title:
+          type: string
+        difficulty:
+          type: string
+          enum: [Easy, Medium, Hard]
+        platform:
+          type: string
+        link:
+          type: string
+
+    QuestionProgressInput:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [Not Started, Attempted, Solved]
+        notes:
+          type: string
+
+    # ── Revisions ─────────────────────────────────────────────────────────
+    RevisionWithDetails:
+      type: object
+      required: [id, revisionDate, status, revisionNumber]
+      properties:
+        id:
+          type: integer
+        revisionDate:
+          type: string
+        status:
+          type: string
+          enum: [Pending, Completed]
+        revisionNumber:
+          type: integer
+        topicId:
+          type: ["integer", "null"]
+        topicName:
+          type: ["string", "null"]
+        questionId:
+          type: ["integer", "null"]
+        questionTitle:
+          type: ["string", "null"]
+        questionDifficulty:
+          type: ["string", "null"]
+
+    # ── Notes ─────────────────────────────────────────────────────────────
+    Note:
+      type: object
+      required: [id, content, createdAt, updatedAt]
+      properties:
+        id:
+          type: integer
+        content:
+          type: string
+        topicId:
+          type: ["integer", "null"]
+        topicName:
+          type: ["string", "null"]
+        questionId:
+          type: ["integer", "null"]
+        questionTitle:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+
+    NoteInput:
+      type: object
+      required: [content]
+      properties:
+        content:
+          type: string
+        topicId:
+          type: integer
+        questionId:
+          type: integer
+
+    NoteUpdate:
+      type: object
+      properties:
+        content:
+          type: string
+
+    # ── Dashboard ─────────────────────────────────────────────────────────
+    DashboardStats:
+      type: object
+      required:
+        - totalTopics
+        - completedTopics
+        - inProgressTopics
+        - totalQuestions
+        - solvedQuestions
+        - attemptedQuestions
+        - revisionsDueToday
+        - upcomingRevisions
+        - overallProgress
+        - topicCompletionPct
+      properties:
+        totalTopics:
+          type: integer
+        completedTopics:
+          type: integer
+        inProgressTopics:
+          type: integer
+        totalQuestions:
+          type: integer
+        solvedQuestions:
+          type: integer
+        attemptedQuestions:
+          type: integer
+        revisionsDueToday:
+          type: integer
+        upcomingRevisions:
+          type: integer
+        overallProgress:
+          type: number
+        topicCompletionPct:
+          type: number
+
+    ActivityItem:
+      type: object
+      required: [id, type, title, timestamp]
+      properties:
+        id:
+          type: integer
+        type:
+          type: string
+          enum: [topic_completed, question_solved, revision_completed]
+        title:
+          type: string
+        subtitle:
+          type: ["string", "null"]
+        timestamp:
+          type: string

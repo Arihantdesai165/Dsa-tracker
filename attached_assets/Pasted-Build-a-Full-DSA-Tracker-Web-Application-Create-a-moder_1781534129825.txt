@@ -1,0 +1,370 @@
+Build a Full DSA Tracker Web Application
+
+Create a modern, production-ready DSA Tracker web application that helps users track their Data Structures & Algorithms preparation journey.
+
+The application should be fully functional, responsive, and support multiple users.
+
+Main Goal
+
+Users should be able to:
+
+Create an account
+Log in securely
+Track DSA topics
+Track DSA questions
+Mark progress
+Save notes
+Get revision reminders
+Monitor overall preparation progress
+Tech Stack
+
+Frontend:
+
+React
+TypeScript
+Tailwind CSS
+React Router
+
+Backend:
+
+Node.js
+Express.js
+
+Database:
+
+PostgreSQL
+
+Authentication:
+
+JWT Authentication
+Authentication
+
+Implement:
+
+Register
+Name
+Email
+Password
+Login
+Email
+Password
+Features
+Password hashing
+JWT authentication
+Protected routes
+Logout
+User-specific data
+
+Each user should only see their own progress and notes.
+
+Layout
+
+Create a modern dashboard layout with:
+
+Sidebar
+Dashboard
+Topics
+Questions
+Revisions
+Notes
+Profile
+Header
+User name
+Dark mode toggle
+Logout button
+Responsive Design
+Mobile friendly
+Tablet friendly
+Desktop friendly
+Dashboard
+
+Show:
+
+Statistics Cards
+Total Topics
+Completed Topics
+In Progress Topics
+Total Questions
+Solved Questions
+Revision Due Today
+Progress Section
+Overall DSA Progress %
+Topic Completion %
+Recent Activity
+
+Show latest:
+
+Completed topics
+Solved questions
+Completed revisions
+DSA Topics Module
+
+Preload the following topics:
+
+Arrays
+Strings
+Linked List
+Stack
+Queue
+Recursion
+Backtracking
+Binary Search
+Trees
+Binary Search Trees
+Heap
+Hashing
+Greedy
+Graphs
+Dynamic Programming
+Bit Manipulation
+
+For each topic store:
+
+Topic Name
+Description
+Status
+
+Status options:
+
+Not Started
+In Progress
+Completed
+
+Also store:
+
+Date Started
+Date Completed
+
+Users should be able to update topic status.
+
+Questions Module
+
+Each topic contains DSA questions.
+
+For every question store:
+
+Question Name
+Topic
+Difficulty
+Platform
+Question Link
+Status
+Notes
+
+Status options:
+
+Not Started
+Attempted
+Solved
+
+Difficulty:
+
+Easy
+Medium
+Hard
+
+Platform examples:
+
+LeetCode
+GeeksforGeeks
+Codeforces
+HackerRank
+
+Features:
+
+Search
+
+Search questions by name
+
+Filter
+
+Filter by:
+
+Topic
+Difficulty
+Status
+Sort
+
+Sort by:
+
+Difficulty
+Recently Solved
+Initial Question Dataset
+
+Seed the database with sample questions.
+
+Example:
+
+Arrays
+Two Sum
+Best Time to Buy and Sell Stock
+Maximum Subarray
+Product of Array Except Self
+Strings
+Valid Anagram
+Longest Common Prefix
+Group Anagrams
+Binary Search
+Binary Search
+Search Insert Position
+Find Peak Element
+Trees
+Invert Binary Tree
+Maximum Depth of Binary Tree
+Same Tree
+Graphs
+Number of Islands
+Clone Graph
+Course Schedule
+
+Include at least 50 sample DSA questions across topics.
+
+Revision System
+
+This is a core feature.
+
+When a question or topic is marked as Solved/Completed:
+
+Automatically create revision reminders:
+
+Revision 1 → after 1 day
+Revision 2 → after 7 days
+Revision 3 → after 30 days
+
+Store:
+
+Revision Date
+Revision Status
+
+Status:
+
+Pending
+Completed
+
+Dashboard should display:
+
+Due Today
+
+All revisions due today.
+
+Upcoming Revisions
+
+Future revisions.
+
+Users can mark revisions as completed.
+
+Notes Module
+
+Users can create notes for:
+
+Topics
+Questions
+
+Features:
+
+Create note
+Edit note
+Delete note
+Save automatically
+
+Store notes in database.
+
+Profile Page
+
+Show:
+
+Name
+Email
+Join Date
+
+Statistics:
+
+Topics Completed
+Questions Solved
+Revision Count
+Database Design
+
+Create tables for:
+
+Users
+id
+name
+email
+password
+Topics
+id
+name
+description
+UserTopicProgress
+userId
+topicId
+status
+startedAt
+completedAt
+Questions
+id
+topicId
+title
+difficulty
+platform
+link
+UserQuestionProgress
+userId
+questionId
+status
+notes
+Revisions
+id
+userId
+topicId
+questionId
+revisionDate
+status
+Notes
+id
+userId
+topicId
+questionId
+content
+UI Requirements
+
+Create a clean SaaS-style interface.
+
+Requirements:
+
+Modern cards
+Responsive layout
+Sidebar navigation
+Dark mode
+Loading states
+Empty states
+Success/error notifications
+Professional design
+
+Use Tailwind CSS for styling.
+
+Additional Features
+
+Add:
+
+Progress bars
+Completion percentages
+Search functionality
+Filter functionality
+Recent activity feed
+Final Output
+
+Generate:
+
+Complete project structure
+Backend API
+Database schema
+Authentication system
+Seed data
+Responsive UI
+Working CRUD operations
+Revision reminder logic
+Dark mode support
+Setup instructions
+
+The application should be fully functional, clean, modern, and ready to run locally with PostgreSQL.
