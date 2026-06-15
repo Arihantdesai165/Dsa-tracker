@@ -4,7 +4,7 @@ import { useAuth } from "@/lib/auth";
 import { useTheme } from "@/components/theme-provider";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { LayoutDashboard, BookOpen, Code2, CalendarClock, StickyNote, User as UserIcon, LogOut, Sun, Moon, Menu } from "lucide-react";
+import { LayoutDashboard, BookOpen, Code2, CalendarClock, StickyNote, User as UserIcon, LogOut, Sun, Moon, Menu, Linkedin } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 
@@ -62,6 +62,17 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         <ScrollArea className="flex-1">
           <NavLinks />
         </ScrollArea>
+        <div className="border-t border-border px-4 py-3">
+          <a
+            href="https://www.linkedin.com/in/arihant.college.project"
+            target="_blank"
+            rel="noreferrer"
+            className="flex items-center gap-2 text-xs text-muted-foreground hover:text-primary transition-colors group"
+          >
+            <Linkedin className="w-3.5 h-3.5 shrink-0 group-hover:text-primary" />
+            <span className="font-mono truncate">Built by <span className="text-foreground font-semibold">Arihant Desai</span></span>
+          </a>
+        </div>
       </aside>
 
       <div className="flex-1 flex flex-col">
