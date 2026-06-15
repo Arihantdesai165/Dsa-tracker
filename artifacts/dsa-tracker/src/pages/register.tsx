@@ -1,7 +1,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { useRegister } from "@workspace/api-client-react";
 import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
@@ -20,6 +20,7 @@ const registerSchema = z.object({
 export default function Register() {
   const { login } = useAuth();
   const { toast } = useToast();
+  const [, setLocation] = useLocation();
   const registerMutation = useRegister();
 
   const form = useForm<z.infer<typeof registerSchema>>({
@@ -33,6 +34,7 @@ export default function Register() {
       {
         onSuccess: (res) => {
           login(res.token);
+          setLocation("/dashboard");
         },
         onError: (err) => {
           toast({

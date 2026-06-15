@@ -1,7 +1,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { useLogin } from "@workspace/api-client-react";
 import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
@@ -19,6 +19,7 @@ const loginSchema = z.object({
 export default function Login() {
   const { login } = useAuth();
   const { toast } = useToast();
+  const [, setLocation] = useLocation();
   const loginMutation = useLogin();
 
   const form = useForm<z.infer<typeof loginSchema>>({
@@ -32,6 +33,7 @@ export default function Login() {
       {
         onSuccess: (res) => {
           login(res.token);
+          setLocation("/dashboard");
         },
         onError: (err) => {
           toast({
