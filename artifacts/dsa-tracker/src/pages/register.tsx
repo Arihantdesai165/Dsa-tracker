@@ -37,11 +37,15 @@ export default function Register() {
           setLocation("/dashboard");
         },
         onError: (err) => {
+          const isEmailTaken = err.status === 409;
           toast({
             title: "Registration failed",
-            description: err.data?.error || "Unknown error",
+            description: isEmailTaken
+              ? "This email is already registered. Try logging in instead."
+              : err.data?.error || "Unknown error",
             variant: "destructive",
           });
+          if (isEmailTaken) setLocation("/login");
         },
       }
     );
