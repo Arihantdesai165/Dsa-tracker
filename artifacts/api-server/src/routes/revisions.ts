@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { eq, and, lte, gte } from "drizzle-orm";
+import { eq, and, lte, gt, inArray } from "drizzle-orm";
 import { db, revisionsTable, topicsTable, questionsTable } from "@workspace/db";
 import { ListRevisionsQueryParams, CompleteRevisionParams } from "@workspace/api-zod";
 import { requireAuth, getUserId } from "../lib/auth";
@@ -19,14 +19,18 @@ router.get("/revisions", requireAuth, async (req, res): Promise<void> => {
   const conditions = [eq(revisionsTable.userId, userId)];
   if (status) conditions.push(eq(revisionsTable.status, status));
 
-  if (dueToday) {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    conditions.push(lte(revisionsTable.revisionDate, tomorrow));
-    conditions.push(gte(revisionsTable.revisionDate, today));
+  if (dueToday === true) {
+    // Due today: revision date is before end of today
+    const endOfToday = new Date();
+    endOfToday.setHours(23, 59, 59, 999);
+    conditions.push(lte(revisionsTable.revisionDate, endOfToday));
+  } else if (dueToday === false) {
+    // Upcoming: revision date is strictly after end of today
+    const endOfToday = new Date();
+    endOfToday.setHours(23, 59, 59, 999);
+    conditions.push(gt(revisionsTable.revisionDate, endOfToday));
   }
+  // dueToday === undefined → no date filter, return all
 
   const rows = await db
     .select()
@@ -39,20 +43,12 @@ router.get("/revisions", requireAuth, async (req, res): Promise<void> => {
 
   const topicsData =
     topicIds.length > 0
-      ? await db.select().from(topicsTable).where(
-          topicIds.length === 1
-            ? eq(topicsTable.id, topicIds[0])
-            : topicsTable.id.inArray(topicIds),
-        )
+      ? await db.select().from(topicsTable).where(inArray(topicsTable.id, topicIds))
       : [];
 
   const questionsData =
     questionIds.length > 0
-      ? await db.select().from(questionsTable).where(
-          questionIds.length === 1
-            ? eq(questionsTable.id, questionIds[0])
-            : questionsTable.id.inArray(questionIds),
-        )
+      ? await db.select().from(questionsTable).where(inArray(questionsTable.id, questionIds))
       : [];
 
   const topicMap = new Map(topicsData.map((t) => [t.id, t]));
@@ -103,8 +99,18 @@ router.patch("/revisions/:revisionId/complete", requireAuth, async (req, res): P
     .where(eq(revisionsTable.id, revisionId))
     .returning();
 
-  const topic = updated.topicId ? (await db.select().from(topicsTable).where(eq(topicsTable.id, updated.topicId)))[0] : null;
-  const question = updated.questionId ? (await db.select().from(questionsTable).where(eq(questionsTable.id, updated.questionId)))[0] : null;
+  const topicIds = updated.topicId ? [updated.topicId] : [];
+  const questionIds = updated.questionId ? [updated.questionId] : [];
+
+  const topicsData = topicIds.length > 0
+    ? await db.select().from(topicsTable).where(inArray(topicsTable.id, topicIds))
+    : [];
+  const questionsData = questionIds.length > 0
+    ? await db.select().from(questionsTable).where(inArray(questionsTable.id, questionIds))
+    : [];
+
+  const topic = topicsData[0] ?? null;
+  const question = questionsData[0] ?? null;
 
   res.json({
     id: updated.id,

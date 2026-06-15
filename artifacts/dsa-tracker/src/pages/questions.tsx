@@ -36,7 +36,9 @@ export default function Questions() {
           toast({ title: "Progress updated" });
           queryClient.invalidateQueries({ queryKey: ["/api/questions"] });
           queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
+          queryClient.invalidateQueries({ queryKey: ["/api/dashboard/activity"] });
           queryClient.invalidateQueries({ queryKey: ["/api/topics"] });
+          queryClient.invalidateQueries({ queryKey: ["/api/revisions"] });
         }
       }
     );
