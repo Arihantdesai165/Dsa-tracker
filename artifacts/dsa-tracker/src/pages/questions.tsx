@@ -3,6 +3,7 @@ import {
   useListQuestions, 
   useUpdateQuestionProgress, 
   useListTopics,
+  useCreateQuestion,
   QuestionWithProgress,
   ListQuestionsParams,
   QuestionProgressInputStatus
@@ -12,12 +13,31 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Search, ExternalLink, Code2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Search, ExternalLink, Code2, Plus } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 
 export default function Questions() {
   const [params, setParams] = useState<ListQuestionsParams>({});
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [newQuestion, setNewQuestion] = useState({
+    title: "",
+    topicId: "",
+    difficulty: "",
+    platform: "LeetCode",
+    link: "",
+  });
+
   const { data: questions, isLoading } = useListQuestions(params, {
     query: {
       queryKey: ["/api/questions", params],
@@ -25,6 +45,7 @@ export default function Questions() {
   });
   const { data: topics } = useListTopics();
   const updateQuestion = useUpdateQuestionProgress();
+  const createQuestion = useCreateQuestion();
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -44,6 +65,37 @@ export default function Questions() {
     );
   };
 
+  const handleCreateSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newQuestion.title || !newQuestion.topicId || !newQuestion.difficulty || !newQuestion.platform) {
+      toast({ title: "Please fill all required fields", variant: "destructive" });
+      return;
+    }
+    
+    createQuestion.mutate({
+      data: {
+        title: newQuestion.title,
+        topicId: Number(newQuestion.topicId),
+        difficulty: newQuestion.difficulty as any,
+        platform: newQuestion.platform,
+        link: newQuestion.link || "",
+      }
+    }, {
+      onSuccess: () => {
+        toast({ title: "Question added successfully!" });
+        setIsDialogOpen(false);
+        setNewQuestion({ title: "", topicId: "", difficulty: "", platform: "LeetCode", link: "" });
+        queryClient.invalidateQueries({ queryKey: ["/api/questions"] });
+        queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
+        queryClient.invalidateQueries({ queryKey: ["/api/dashboard/activity"] });
+        queryClient.invalidateQueries({ queryKey: ["/api/topics"] });
+      },
+      onError: (err: any) => {
+        toast({ title: "Failed to add question", description: err.message || "Unknown error", variant: "destructive" });
+      }
+    });
+  };
+
   const difficultyColors = {
     Easy: "text-green-500 bg-green-500/10 border-green-500/20",
     Medium: "text-yellow-500 bg-yellow-500/10 border-yellow-500/20",
@@ -52,9 +104,85 @@ export default function Questions() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold font-mono tracking-tight">Questions</h1>
-        <p className="text-muted-foreground mt-1">Search, filter, and track your problem-solving progress.</p>
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold font-mono tracking-tight">Questions</h1>
+          <p className="text-muted-foreground mt-1">Search, filter, and track your problem-solving progress.</p>
+        </div>
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogTrigger asChild>
+            <Button className="font-mono">
+              <Plus className="w-4 h-4 mr-2" />
+              Add Question
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle className="font-mono">Add Custom Question</DialogTitle>
+            </DialogHeader>
+            <form onSubmit={handleCreateSubmit} className="space-y-4 pt-4">
+              <div className="space-y-2">
+                <Label htmlFor="title">Title *</Label>
+                <Input 
+                  id="title" 
+                  value={newQuestion.title} 
+                  onChange={e => setNewQuestion({...newQuestion, title: e.target.value})} 
+                  placeholder="e.g. Two Sum" 
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Topic *</Label>
+                <Select value={newQuestion.topicId} onValueChange={v => setNewQuestion({...newQuestion, topicId: v})}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select topic" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {topics?.map(t => (
+                      <SelectItem key={t.id} value={t.id.toString()}>{t.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Difficulty *</Label>
+                <Select value={newQuestion.difficulty} onValueChange={v => setNewQuestion({...newQuestion, difficulty: v})}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select difficulty" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Easy">Easy</SelectItem>
+                    <SelectItem value="Medium">Medium</SelectItem>
+                    <SelectItem value="Hard">Hard</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="platform">Platform *</Label>
+                  <Input 
+                    id="platform" 
+                    value={newQuestion.platform} 
+                    onChange={e => setNewQuestion({...newQuestion, platform: e.target.value})} 
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="link">Link (Optional)</Label>
+                  <Input 
+                    id="link" 
+                    value={newQuestion.link} 
+                    onChange={e => setNewQuestion({...newQuestion, link: e.target.value})} 
+                    placeholder="https://..." 
+                  />
+                </div>
+              </div>
+              <DialogFooter className="pt-4">
+                <Button type="submit" disabled={createQuestion.isPending}>
+                  {createQuestion.isPending ? "Adding..." : "Add Question"}
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
       </div>
 
       <div className="flex flex-col md:flex-row gap-4 bg-card p-4 rounded-lg border">
@@ -100,6 +228,18 @@ export default function Questions() {
             <SelectItem value="Not Started">Not Started</SelectItem>
             <SelectItem value="Attempted">Attempted</SelectItem>
             <SelectItem value="Solved">Solved</SelectItem>
+          </SelectContent>
+        </Select>
+
+        <Select onValueChange={(val: any) => setParams(p => ({ ...p, sortBy: val === "default" ? undefined : val }))}>
+          <SelectTrigger className="w-[140px] font-mono bg-secondary/50">
+            <SelectValue placeholder="Sort By" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="default">Default</SelectItem>
+            <SelectItem value="difficulty">Difficulty</SelectItem>
+            <SelectItem value="recentlySolved">Recently Solved</SelectItem>
+            <SelectItem value="name">Name (A-Z)</SelectItem>
           </SelectContent>
         </Select>
       </div>

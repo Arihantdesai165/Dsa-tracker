@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { eq, and, lte, sql } from "drizzle-orm";
+import { eq, and, lte, gte, sql } from "drizzle-orm";
 import {
   db,
   topicsTable,
@@ -60,7 +60,7 @@ router.get("/dashboard/stats", requireAuth, async (req, res): Promise<void> => {
         eq(revisionsTable.userId, userId),
         eq(revisionsTable.status, "Pending"),
         lte(revisionsTable.revisionDate, new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000)),
-        lte(tomorrow, revisionsTable.revisionDate),
+        gte(revisionsTable.revisionDate, tomorrow),
       ),
     );
 
