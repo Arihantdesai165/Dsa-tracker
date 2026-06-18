@@ -55,7 +55,7 @@ export default function Topics() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {topics?.map((topic) => (
-          <Card key={topic.id} className={`flex flex-col ${topic.status === 'Completed' ? 'border-primary/50 bg-primary/5' : ''}`}>
+          <Card key={topic.id} className={`flex flex-col transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-primary/5 hover:border-primary/50 ${topic.status === 'Completed' ? 'border-primary/50 bg-primary/5' : ''}`}>
             <CardHeader>
               <div className="flex justify-between items-start mb-2">
                 <Badge variant={topic.status === 'Completed' ? 'default' : topic.status === 'In Progress' ? 'secondary' : 'outline'} className="font-mono">

@@ -31,7 +31,7 @@ export default function Dashboard() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <Card className="border-primary/20">
+        <Card className="border-primary/20 transition-all hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground font-mono">OVERALL PROGRESS</CardTitle>
           </CardHeader>
@@ -42,7 +42,7 @@ export default function Dashboard() {
             <Progress value={stats?.overallProgress} className="h-2" />
           </CardContent>
         </Card>
-        <Card className="border-primary/20">
+        <Card className="border-primary/20 transition-all hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground font-mono">TOPIC COMPLETION</CardTitle>
           </CardHeader>
@@ -63,14 +63,14 @@ export default function Dashboard() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card className="lg:col-span-2">
+        <Card className="lg:col-span-2 transition-all hover:border-border/80 hover:shadow-md">
           <CardHeader>
             <CardTitle className="font-mono">Recent Activity</CardTitle>
           </CardHeader>
           <CardContent>
             {!activity?.length ? (
               <div className="text-center py-8 text-muted-foreground border border-dashed rounded-lg bg-secondary/20">
-                <Code2 className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                <Code2 className="w-8 h-8 mx-auto mb-2 opacity-50 animate-pulse text-primary" />
                 <p>No activity yet. Start solving questions!</p>
               </div>
             ) : (
@@ -96,7 +96,7 @@ export default function Dashboard() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="transition-all hover:border-border/80 hover:shadow-md">
           <CardHeader>
             <CardTitle className="font-mono">Topic Status</CardTitle>
           </CardHeader>
@@ -124,7 +124,7 @@ export default function Dashboard() {
 
 function StatCard({ title, value, icon: Icon, alert = false }: any) {
   return (
-    <Card className={alert ? "border-destructive/50 bg-destructive/5" : ""}>
+    <Card className={`transition-all hover:-translate-y-1 hover:shadow-md ${alert ? "border-destructive/50 bg-destructive/5 hover:shadow-destructive/10" : "hover:border-primary/30 hover:shadow-primary/5"}`}>
       <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
         <CardTitle className="text-xs font-medium font-mono text-muted-foreground tracking-wider">
           {title}

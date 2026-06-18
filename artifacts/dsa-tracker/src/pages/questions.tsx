@@ -250,14 +250,14 @@ export default function Questions() {
         </div>
       ) : questions?.length === 0 ? (
         <div className="text-center py-12 text-muted-foreground border border-dashed rounded-lg bg-secondary/20">
-          <Code2 className="w-12 h-12 mx-auto mb-4 opacity-50" />
+          <Code2 className="w-12 h-12 mx-auto mb-4 opacity-50 animate-pulse text-primary" />
           <h3 className="text-lg font-medium font-mono mb-2">No questions found</h3>
           <p>Try adjusting your filters or start solving questions!</p>
         </div>
       ) : (
         <div className="space-y-4">
           {questions?.map((q) => (
-            <Card key={q.id} className="overflow-hidden transition-all hover:border-primary/50">
+            <Card key={q.id} className="overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5">
               <CardContent className="p-0">
                 <div className="flex flex-col md:flex-row items-center p-4 gap-4">
                   
