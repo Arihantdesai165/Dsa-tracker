@@ -15,6 +15,7 @@ import Revisions from "@/pages/revisions";
 import Notes from "@/pages/notes";
 import Profile from "@/pages/profile";
 import { AppLayout } from "@/components/layout/app-layout";
+import { Spinner } from "@/components/ui/spinner";
 
 const queryClient = new QueryClient();
 
@@ -23,7 +24,11 @@ function ProtectedRoute({ component: Component, ...rest }: any) {
   const [, setLocation] = useLocation();
 
   if (isLoading) {
-    return <div className="min-h-screen flex items-center justify-center bg-background"><div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div></div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Spinner className="w-12 h-12 text-primary" />
+      </div>
+    );
   }
 
   if (!user) {
@@ -43,7 +48,11 @@ function Root() {
   const [, setLocation] = useLocation();
 
   if (isLoading) {
-    return <div className="min-h-screen flex items-center justify-center bg-background"><div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div></div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Spinner className="w-12 h-12 text-primary" />
+      </div>
+    );
   }
 
   if (user) {
