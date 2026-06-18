@@ -51,7 +51,7 @@ export default function Login() {
       {/* Decorative background grid */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none"></div>
       
-      <Card className="w-full max-w-md border-primary/20 shadow-2xl shadow-primary/10 relative z-10 bg-card/95 backdrop-blur">
+      <Card className="w-full max-w-md border-primary/20 shadow-2xl shadow-primary/10 hover:shadow-primary/30 hover:-translate-y-1 transition-all duration-500 relative z-10 bg-card/95 backdrop-blur">
         <CardHeader className="space-y-3 text-center">
           <div className="flex justify-center mb-2">
             <div className="bg-primary/20 p-3 rounded-xl border border-primary/30">
@@ -90,7 +90,7 @@ export default function Login() {
             </div>
             <Button
               type="submit"
-              className="w-full font-mono font-bold uppercase tracking-wider"
+              className="w-full font-mono font-bold uppercase tracking-wider transition-all hover:scale-[1.02] hover:shadow-lg hover:shadow-primary/20"
               disabled={loginMutation.isPending}
             >
               {loginMutation.isPending ? "Authenticating..." : "Initialize Session"}
